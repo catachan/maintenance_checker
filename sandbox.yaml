@@ -1,0 +1,20 @@
+testbed:
+  name: IOS XE on CSR Recommended Code Always On
+  credentials:
+      default:
+        username: developer
+        password: C1sco12345
+
+devices:
+  csr1000v:
+    os: iosxe
+    type: csr1000v
+    credentials:
+      default:
+        username: developer
+        password: C1sco12345
+    connections:
+      cli:
+        protocol: ssh
+        ip: ios-xe-mgmt.cisco.com
+        port: 8181
