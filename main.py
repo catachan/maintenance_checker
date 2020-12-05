@@ -2,6 +2,7 @@ from genie.testbed import load
 from genie.utils.diff import Diff
 import sys
 import pickle
+import os
 
 def check_device(testbed):
 
@@ -38,35 +39,61 @@ def get_diff(int_state,after_state,testbed,checks):
             for i in diff.diffs:
                 print(str(i))
 
+def func_get_arguments():
+    ###########################################
+    # function to get command line arguments
+    ###########################################
+
+    i=0
+    # define dict to hold options / command line switches
+    options={}
+    options['import'] = False
+    
+    #parse through arguments and fill citionary with value pairs
+    for argument in sys.argv:
+        i=i+1
+        if argument == "-i":
+            options['import'] = sys.argv[i]
+
+    return options
+
 if __name__ == "__main__":
     
     std_ref = sys.stdout
 
-    checks = ['static_routing','interface']
+    checks = ['static_routing']
     int_state = {}
     after_state = {}
     testbed = load('sandbox.yaml')
 
+    #get command line arguments
+    options={}
+    options = func_get_arguments()
 
- 
-    int_state = check_device(testbed)
-
-    sys.stdout = std_ref
-
-    selection = input("\nPress Enter to continue or y if you want to dump it to a file...")
-    if selection == 'y':
-        with open('data.txt', 'wb') as outfile:
-            pickle.dump(int_state, outfile)
-        print("Dumped to file ....")
+    if options['import'] ==  False:
+        int_state = check_device(testbed)
+        sys.stdout = std_ref
+        selection = input("\nPress Enter to continue or \'d\' if you want to dump it to a file...")
+        if selection == 'd':
+            filename = input("Please enter export filename:")
+            with open(filename, 'wb') as outfile:
+                pickle.dump(int_state, outfile)
+        print("Dumped to file "  + os.getcwd() + "/" + filename)
+        exit()
     else:
-        after_state = check_device(testbed)
+        with open(options['import'],'rb') as importfile:
+            int_state = pickle.load(importfile)
 
-        print("\n****************************************************")
-        print("DELTAS:")
-        print("****************************************************")
-        get_diff(int_state,after_state,testbed,checks)
-
-
+    print("\n****************************************************")
+    print("* Beginning after check :")
+    print("****************************************************\n")
 
 
+
+    after_state = check_device(testbed)
+
+    print("\n****************************************************")
+    print("DELTAS:")
+    print("****************************************************")
+    get_diff(int_state,after_state,testbed,checks)
 
